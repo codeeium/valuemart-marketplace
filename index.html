@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ValueMart Omnichannel Marketplace</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0071dc',
+                            600: '#005bb5',
+                            700: '#004f9a',
+                            800: '#003b73',
+                            accent: '#ffc220'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+<!-- ================= TOP RBAC BAR ================= -->
+<header class="bg-slate-900 text-slate-200 text-xs px-4 py-2 border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-2">
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+          ValueMart FRD v1.2 Standard
+        </span>
+            <span class="hidden sm:inline text-slate-400">| Session: <span id="session-policy" class="text-emerald-400 font-semibold">Storefront Active</span></span>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <label for="role-select" class="text-slate-300 font-medium flex items-center gap-1">
+                <i data-lucide="shield" class="w-3.5 h-3.5 text-brand-accent"></i> Persona:
+            </label>
+            <select id="role-select" onchange="vm.switchRole(this.value)" class="bg-slate-800 border border-slate-700 text-white rounded px-2.5 py-1 text-xs focus:ring-2 focus:ring-brand-500 outline-none">
+                <option value="customer">Shopper (B2C Storefront)</option>
+                <option value="platform_admin">Platform Admin (Enterprise PIM)</option>
+                <option value="catalog_editor">Catalog Editor (Maker/Drafts)</option>
+                <option value="seller_admin">Seller Admin (TechZone Direct)</option>
+                <option value="reader">Auditor / Reader (Read-Only & Masked)</option>
+            </select>
+            <span id="role-scope-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+          Customer Scope
+        </span>
+        </div>
+    </div>
+</header>
+
+<!-- ================= STOREFRONT INTERFACE ================= -->
+<div id="view-storefront" class="flex-grow flex flex-col">
+    <!-- Header -->
+    <div class="bg-brand-500 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="vm.setStorefrontTab('browse')">
+                <div class="w-9 h-9 rounded-full bg-brand-accent flex items-center justify-center font-black text-brand-800 text-lg shadow">
+                    V
+                </div>
+                <div>
+                    <span class="text-2xl font-black tracking-tight leading-none text-white block">Value<span class="text-brand-accent">Mart</span></span>
+                    <span class="text-[10px] tracking-wider text-blue-100 uppercase font-medium">Omnichannel Marketplace</span>
+                </div>
+            </div>
+
+            <button onclick="vm.openModal('modal-location')" class="flex items-center space-x-2 bg-brand-600 hover:bg-brand-700 px-3.5 py-1.5 rounded-full text-xs font-medium border border-blue-400/30 transition">
+                <i data-lucide="map-pin" class="w-4 h-4 text-brand-accent"></i>
+                <div class="text-left">
+                    <span class="text-[10px] block text-blue-200 leading-none">Fulfillment Node</span>
+                    <span id="store-label" class="font-bold text-white">Sacramento #1042 (Pickup)</span>
+                </div>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-75"></i>
+            </button>
+
+            <div class="flex-1 max-w-xl min-w-[260px]">
+                <div class="relative">
+                    <input type="text" id="search-box" onkeyup="vm.search(this.value)" placeholder="Search groceries, electronics, essentials & marketplace..." class="w-full pl-4 pr-10 py-2 rounded-full text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-brand-accent" />
+                    <span class="absolute right-3 top-2.5 text-gray-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4 text-xs font-semibold">
+                <button onclick="vm.setStorefrontTab('account')" class="hover:text-brand-accent flex items-center gap-1">
+                    <i data-lucide="user" class="w-4 h-4"></i> Account
+                </button>
+                <button onclick="vm.toggleCart(true)" class="relative flex items-center space-x-1.5 bg-brand-700 hover:bg-brand-800 px-3.5 py-2 rounded-full">
+                    <i data-lucide="shopping-cart" class="w-4 h-4 text-brand-accent"></i>
+                    <span id="cart-counter" class="bg-brand-accent text-brand-900 font-extrabold px-1.5 py-0.2 text-[10px] rounded-full">0</span>
+                    <span id="cart-total-badge" class="hidden sm:inline font-bold">$0.00</span>
+                </button>
+            </div>
+        </div>
+
+        <nav class="bg-brand-700 border-t border-blue-400/20 px-4 py-1.5 text-xs text-blue-100 overflow-x-auto whitespace-nowrap">
+            <div class="max-w-7xl mx-auto flex items-center space-x-6">
+                <button onclick="vm.filterCategory('All')" class="hover:text-brand-accent font-bold">All Departments</button>
+                <button onclick="vm.filterCategory('Grocery')" class="hover:text-brand-accent">Grocery & Fresh</button>
+                <button onclick="vm.filterCategory('Household')" class="hover:text-brand-accent">Household Cleaning</button>
+                <button onclick="vm.filterCategory('Electronics')" class="hover:text-brand-accent">Electronics & Audio</button>
+                <button onclick="vm.filterCategory('Kitchen')" class="hover:text-brand-accent">Kitchen Appliances</button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Storefront Main -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+        <div id="tab-browse" class="space-y-6">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-blue-900 via-brand-700 to-brand-600 text-white rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="space-y-1.5 max-w-xl">
+                    <span class="text-[10px] uppercase tracking-wider font-extrabold bg-brand-accent text-brand-900 px-2 py-0.5 rounded">Omnichannel Fulfillment</span>
+                    <h2 class="text-2xl font-black">Everyday Low Prices. Guaranteed Slots.</h2>
+                    <p class="text-xs text-blue-100">Order first-party essentials alongside certified third-party marketplace sellers in one unified checkout.</p>
+                </div>
+                <button onclick="vm.openModal('modal-location')" class="bg-brand-accent hover:bg-yellow-400 text-brand-900 font-bold px-4 py-2 rounded-full text-xs transition">Change Pickup / Delivery Node</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <aside class="space-y-4">
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 text-xs">
+                        <div class="font-bold pb-2 border-b border-gray-100">Filter Products</div>
+                        <div>
+                            <label class="font-bold text-gray-600 block mb-1">Seller Type</label>
+                            <div class="space-y-1">
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="f-1p" onchange="vm.renderCatalog()" checked /> 1P ValueMart Direct</label>
+                                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="f-3p" onchange="vm.renderCatalog()" checked /> 3P Marketplace Sellers</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-600 block mb-1">Sort By</label>
+                            <select id="sort-order" onchange="vm.renderCatalog()" class="w-full border border-gray-300 rounded p-1.5 outline-none">
+                                <option value="relevance">Featured & Relevance</option>
+                                <option value="price_asc">Price: Low to High</option>
+                                <option value="price_desc">Price: High to Low</option>
+                            </select>
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="lg:col-span-3">
+                    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+                </section>
+            </div>
+        </div>
+
+        <div id="tab-pdp" class="hidden">
+            <button onclick="vm.setStorefrontTab('browse')" class="text-xs font-bold text-brand-500 mb-4 flex items-center gap-1">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Product Grid
+            </button>
+            <div id="pdp-container" class="bg-white p-6 rounded-2xl border border-gray-200"></div>
+        </div>
+
+        <div id="tab-account" class="hidden">
+            <div class="max-w-3xl mx-auto space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+                    <h2 class="text-lg font-black">Customer Order History & Self-Service Returns</h2>
+                    <button onclick="vm.setStorefrontTab('browse')" class="text-xs text-brand-500 font-bold hover:underline">Continue Shopping</button>
+                </div>
+                <div id="orders-container" class="space-y-3"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ================= ADMIN PORTAL ================= -->
+<div id="view-admin" class="hidden flex-grow bg-slate-100 flex flex-col">
+    <div class="bg-slate-900 text-white px-6 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <div class="w-7 h-7 bg-brand-500 text-white font-black flex items-center justify-center text-xs rounded">VM</div>
+            <span class="font-bold text-sm">Enterprise Operations & PIM Gateway</span>
+        </div>
+        <div class="flex space-x-1 text-xs">
+            <button onclick="vm.setAdminTab('pim')" class="bg-brand-600 text-white px-3 py-1.5 rounded font-bold">PIM Master</button>
+            <button onclick="vm.openModal('modal-new-sku')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-bold flex items-center gap-1">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Propose SKU Draft
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto w-full p-6 space-y-4 flex-grow">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-sm">Master Catalog Lifecycle (SEC-004 Maker-Checker)</h3>
+                <span class="text-xs text-slate-400">Policy: Catalog Editors propose drafts; Platform Admins approve to Active.</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200">
+                    <tr>
+                        <th class="p-2.5">SKU ID</th>
+                        <th class="p-2.5">Title</th>
+                        <th class="p-2.5">Category</th>
+                        <th class="p-2.5">Seller</th>
+                        <th class="p-2.5">Base Price</th>
+                        <th class="p-2.5">Status</th>
+                        <th class="p-2.5 text-right">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="admin-pim-tbody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ================= SELLER PORTAL ================= -->
+<div id="view-seller" class="hidden flex-grow bg-slate-50 flex flex-col">
+    <div class="bg-indigo-900 text-white px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <div class="w-7 h-7 bg-indigo-500 rounded flex items-center justify-center font-black text-xs">TZ</div>
+            <span class="font-bold text-sm">Seller Central: TechZone Direct (Tenant Isolated)</span>
+        </div>
+        <span class="text-[11px] bg-indigo-800 text-indigo-200 px-2.5 py-1 rounded">SEC-006 Data Barrier Enforced</span>
+    </div>
+    <main class="max-w-7xl mx-auto w-full p-6 flex-grow space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <h3 class="font-bold text-sm mb-3">Your Scoped Active Marketplace Offers</h3>
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 font-bold text-slate-600">
+                <tr>
+                    <th class="p-2.5">Product</th>
+                    <th class="p-2.5">Offer Price</th>
+                    <th class="p-2.5">Stock</th>
+                    <th class="p-2.5 text-right">Manage</th>
+                </tr>
+                </thead>
+                <tbody id="seller-tbody" class="divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- ================= READER / AUDITOR PORTAL ================= -->
+<div id="view-reader" class="hidden flex-grow bg-slate-100 flex flex-col">
+    <div class="bg-zinc-800 text-white px-6 py-3 flex items-center justify-between">
+        <span class="font-bold text-sm flex items-center gap-1.5"><i data-lucide="eye" class="w-4 h-4"></i> Compliance & Security Audit Trail</span>
+        <span class="text-xs text-zinc-400">Zero Mutation Rights | Masked PII</span>
+    </div>
+    <main class="max-w-7xl mx-auto w-full p-6 flex-grow">
+        <div class="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+            <table class="w-full text-left text-xs font-mono">
+                <thead class="bg-zinc-50 font-bold text-zinc-700">
+                <tr>
+                    <th class="p-3">Timestamp</th>
+                    <th class="p-3">Actor Role</th>
+                    <th class="p-3">Permission Key</th>
+                    <th class="p-3">Target</th>
+                    <th class="p-3">Audit Details</th>
+                </tr>
+                </thead>
+                <tbody id="reader-tbody" class="divide-y divide-zinc-100 text-[11px]"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- ================= CART DRAWER ================= -->
+<div id="drawer-cart" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40" onclick="vm.toggleCart(false)"></div>
+    <div class="absolute right-0 top-0 bottom-0 max-w-md w-full bg-white shadow-2xl flex flex-col z-10">
+        <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-bold text-sm">Shopping Basket (Omnichannel Grouping)</h3>
+            <button onclick="vm.toggleCart(false)" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <div id="cart-list" class="flex-grow overflow-y-auto p-4 space-y-3 custom-scroll"></div>
+        <div class="p-4 border-t border-gray-200 bg-gray-50 space-y-2 text-xs">
+            <div class="flex justify-between"><span>Subtotal:</span><span id="cart-subtotal" class="font-bold">$0.00</span></div>
+            <div class="flex justify-between"><span>Estimated Tax (8.25%):</span><span id="cart-tax" class="font-bold">$0.00</span></div>
+            <div class="flex justify-between text-sm font-black border-t border-gray-200 pt-2"><span>Total:</span><span id="cart-grandtotal">$0.00</span></div>
+            <button onclick="vm.checkout()" class="w-full bg-brand-accent hover:bg-yellow-400 text-brand-900 font-extrabold py-2.5 rounded-xl mt-2 transition">Authorize & Place Order</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="modal-location" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 text-xs">
+        <div class="flex items-center justify-between font-bold text-sm">
+            <span>Select Fulfillment Store</span>
+            <button onclick="vm.closeModal('modal-location')"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <select id="sel-store-node" class="w-full border border-gray-300 rounded p-2 outline-none">
+            <option value="Sacramento #1042">Sacramento Supercenter #1042</option>
+            <option value="Roseville #2081">Roseville Marketplace #2081</option>
+        </select>
+        <button onclick="vm.saveStore()" class="w-full bg-brand-500 text-white py-2 rounded-lg font-bold">Apply Fulfillment Node</button>
+    </div>
+</div>
+
+<div id="modal-new-sku" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 text-xs">
+        <div class="flex items-center justify-between font-bold text-sm">
+            <span>Propose SKU Draft</span>
+            <button onclick="vm.closeModal('modal-new-sku')"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <input type="text" id="draft-title" placeholder="Product Title" class="w-full border p-2 rounded" />
+        <select id="draft-cat" class="w-full border p-2 rounded">
+            <option value="Grocery">Grocery</option>
+            <option value="Household">Household</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Kitchen">Kitchen</option>
+        </select>
+        <input type="number" id="draft-price" step="0.01" placeholder="Base Price ($)" class="w-full border p-2 rounded" />
+        <button onclick="vm.createSkuDraft()" class="w-full bg-brand-500 text-white py-2 rounded-lg font-bold">Submit Draft</button>
+    </div>
+</div>
+
+<script>
+    class ValueMartEngine {
+        constructor() {
+            this.products = [
+                { id: 'SKU-1001', title: 'Fresh Valley Whole Milk, 1 Gal', category: 'Grocery', price: 4.28, unitPrice: '$0.03/oz', seller: 'ValueMart (1P)', sellerType: '1P', stock: 120, state: 'Active', rating: 4.8, img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=300&q=80', desc: 'Pasteurized local grade A whole milk.' },
+                { id: 'SKU-1002', title: 'SparklePro Detergent (64 Loads)', category: 'Household', price: 11.97, unitPrice: '$0.19/load', seller: 'ValueMart (1P)', sellerType: '1P', stock: 65, state: 'Active', rating: 4.6, img: 'https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?auto=format&fit=crop&w=300&q=80', desc: 'Heavy duty cold-water clean formula.' },
+                { id: 'SKU-1003', title: 'AeroPulse ANC Wireless Headphones', category: 'Electronics', price: 79.99, unitPrice: null, seller: 'TechZone Direct', sellerType: '3P', stock: 25, state: 'Active', rating: 4.4, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80', desc: 'Active noise cancelling with 40-hr battery.' },
+                { id: 'SKU-1004', title: 'ChefCraft 10" Non-Stick Skillet', category: 'Kitchen', price: 24.99, unitPrice: null, seller: 'ValueMart (1P)', sellerType: '1P', stock: 40, state: 'Active', rating: 4.7, img: 'https://images.unsplash.com/photo-1584990347449-3994e63f350c?auto=format&fit=crop&w=300&q=80', desc: 'Hard anodized aluminum frying pan.' }
+            ];
+            this.cart = [];
+            this.orders = [];
+            this.audit = [];
+            this.role = 'customer';
+            this.activeCategory = 'All';
+            this.query = '';
+        }
+
+        init() {
+            this.renderCatalog();
+            this.renderAdminPIM();
+            this.renderSeller();
+            this.renderReader();
+            lucide.createIcons();
+        }
+
+        switchRole(r) {
+            this.role = r;
+            ['view-storefront', 'view-admin', 'view-seller', 'view-reader'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            const badge = document.getElementById('role-scope-badge');
+            if (r === 'customer') {
+                document.getElementById('view-storefront').classList.remove('hidden');
+                badge.innerText = 'Customer Scope';
+            } else if (r === 'platform_admin' || r === 'catalog_editor') {
+                document.getElementById('view-admin').classList.remove('hidden');
+                badge.innerText = r === 'platform_admin' ? 'Enterprise Admin Scope' : 'Catalog Maker Scope';
+            } else if (r === 'seller_admin') {
+                document.getElementById('view-seller').classList.remove('hidden');
+                badge.innerText = 'Tenant: TechZone Direct';
+            } else if (r === 'reader') {
+                document.getElementById('view-reader').classList.remove('hidden');
+                badge.innerText = 'Auditor (Read-Only)';
+            }
+            lucide.createIcons();
+        }
+
+        setStorefrontTab(t) {
+            document.getElementById('tab-browse').classList.toggle('hidden', t !== 'browse');
+            document.getElementById('tab-pdp').classList.toggle('hidden', t !== 'pdp');
+            document.getElementById('tab-account').classList.toggle('hidden', t !== 'account');
+            if (t === 'account') this.renderOrders();
+            lucide.createIcons();
+        }
+
+        filterCategory(c) { this.activeCategory = c; this.setStorefrontTab('browse'); this.renderCatalog(); }
+        search(q) { this.query = q.toLowerCase(); this.renderCatalog(); }
+
+        renderCatalog() {
+            const grid = document.getElementById('product-grid');
+            const show1P = document.getElementById('f-1p').checked;
+            const show3P = document.getElementById('f-3p').checked;
+            const sort = document.getElementById('sort-order').value;
+
+            let filtered = this.products.filter(p => {
+                if (p.state !== 'Active') return false;
+                if (this.activeCategory !== 'All' && p.category !== this.activeCategory) return false;
+                if (this.query && !p.title.toLowerCase().includes(this.query)) return false;
+                if (!show1P && p.sellerType === '1P') return false;
+                if (!show3P && p.sellerType === '3P') return false;
+                return true;
+            });
+
+            if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
+            if (sort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
+
+            grid.innerHTML = filtered.map(item => `
+          <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col p-3 hover:shadow-md transition">
+            <img src="${item.img}" alt="${item.title}" class="h-36 w-full object-cover rounded-xl mb-2" />
+            <span class="text-[10px] font-bold ${item.sellerType === '1P' ? 'text-brand-600' : 'text-indigo-600'}">${item.seller}</span>
+            <h4 class="font-bold text-xs line-clamp-2 mt-1 flex-grow">${item.title}</h4>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span class="font-black text-sm">$${item.price.toFixed(2)}</span>
+              <button onclick="vm.addToCart('${item.id}')" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold px-3 py-1 rounded-full">Add</button>
+            </div>
+          </div>
+        `).join('');
+            lucide.createIcons();
+        }
+
+        addToCart(id) {
+            const p = this.products.find(x => x.id === id);
+            const ex = this.cart.find(x => x.id === id);
+            if (ex) ex.qty += 1; else this.cart.push({ ...p, qty: 1 });
+            this.updateCart();
+        }
+
+        updateCart() {
+            const count = this.cart.reduce((a, b) => a + b.qty, 0);
+            const sub = this.cart.reduce((a, b) => a + (b.price * b.qty), 0);
+            document.getElementById('cart-counter').innerText = count;
+            document.getElementById('cart-total-badge').innerText = `$${sub.toFixed(2)}`;
+            document.getElementById('cart-subtotal').innerText = `$${sub.toFixed(2)}`;
+            document.getElementById('cart-tax').innerText = `$${(sub * 0.0825).toFixed(2)}`;
+            document.getElementById('cart-grandtotal').innerText = `$${(sub * 1.0825).toFixed(2)}`;
+            document.getElementById('cart-list').innerHTML = this.cart.map(c => `
+          <div class="flex items-center justify-between text-xs bg-gray-50 p-2 rounded-lg border">
+            <div><span class="font-bold block">${c.title}</span><span>$${c.price.toFixed(2)} x ${c.qty}</span></div>
+            <span class="font-black">$${(c.price * c.qty).toFixed(2)}</span>
+          </div>
+        `).join('');
+        }
+
+        toggleCart(o) { document.getElementById('drawer-cart').classList.toggle('hidden', !o); if (o) this.updateCart(); }
+
+        checkout() {
+            if (this.cart.length === 0) return;
+            const total = this.cart.reduce((a, b) => a + (b.price * b.qty), 0) * 1.0825;
+            const oId = `VM-${Math.floor(10000 + Math.random() * 90000)}`;
+            this.orders.unshift({ id: oId, total, items: [...this.cart], status: 'Authorized & Allocated' });
+            this.audit.unshift({ time: new Date().toISOString().substring(11, 19), role: 'Storefront Checkout', perm: 'order.create', target: oId, details: `Captured $${total.toFixed(2)}` });
+            this.cart = [];
+            this.updateCart();
+            this.toggleCart(false);
+            this.setStorefrontTab('account');
+        }
+
+        renderOrders() {
+            const c = document.getElementById('orders-container');
+            if (!this.orders.length) { c.innerHTML = '<p class="text-xs text-gray-500">No active orders found.</p>'; return; }
+            c.innerHTML = this.orders.map(o => `
+          <div class="bg-white p-4 rounded-xl border border-gray-200 text-xs space-y-2">
+            <div class="flex justify-between font-bold"><span>Order ${o.id}</span><span class="text-blue-600">${o.status}</span></div>
+            <div>Total Captured: <strong>$${o.total.toFixed(2)}</strong></div>
+          </div>
+        `).join('');
+        }
+
+        renderAdminPIM() {
+            document.getElementById('admin-pim-tbody').innerHTML = this.products.map(p => `
+          <tr>
+            <td class="p-2.5 font-mono">${p.id}</td>
+            <td class="p-2.5 font-bold">${p.title}</td>
+            <td class="p-2.5">${p.category}</td>
+            <td class="p-2.5">${p.seller}</td>
+            <td class="p-2.5 font-bold">$${p.price.toFixed(2)}</td>
+            <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.state === 'Active' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}">${p.state}</span></td>
+            <td class="p-2.5 text-right">
+              ${p.state === 'In Review' && this.role === 'platform_admin' ? `<button onclick="vm.approve('${p.id}')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-bold">Approve</button>` : ''}
+            </td>
+          </tr>
+        `).join('');
+        }
+
+        createSkuDraft() {
+            const title = document.getElementById('draft-title').value;
+            const category = document.getElementById('draft-cat').value;
+            const price = parseFloat(document.getElementById('draft-price').value) || 9.99;
+            const id = `SKU-${Math.floor(1000 + Math.random() * 9000)}`;
+            this.products.unshift({ id, title, category, price, unitPrice: null, seller: 'ValueMart (1P)', sellerType: '1P', stock: 50, state: 'In Review', rating: 5.0, img: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=300&q=80', desc: 'Draft SKU proposal.' });
+            this.audit.unshift({ time: new Date().toISOString().substring(11, 19), role: this.role, perm: 'product.create', target: id, details: 'Created draft SKU' });
+            this.closeModal('modal-new-sku');
+            this.renderAdminPIM();
+            this.renderCatalog();
+        }
+
+        approve(id) {
+            const p = this.products.find(x => x.id === id);
+            if (p) p.state = 'Active';
+            this.audit.unshift({ time: new Date().toISOString().substring(11, 19), role: 'Platform Admin', perm: 'product.approve', target: id, details: 'Approved to Active state' });
+            this.renderAdminPIM();
+            this.renderCatalog();
+        }
+
+        renderSeller() {
+            document.getElementById('seller-tbody').innerHTML = this.products.filter(p => p.seller === 'TechZone Direct').map(p => `
+          <tr>
+            <td class="p-2.5 font-bold">${p.title}</td>
+            <td class="p-2.5 font-bold text-indigo-700">$${p.price.toFixed(2)}</td>
+            <td class="p-2.5">${p.stock} units</td>
+            <td class="p-2.5 text-right"><span class="text-emerald-600 font-bold">Active Offer</span></td>
+          </tr>
+        `).join('');
+        }
+
+        renderReader() {
+            document.getElementById('reader-tbody').innerHTML = this.audit.map(a => `
+          <tr><td class="p-3">${a.time}</td><td class="p-3 font-bold">${a.role}</td><td class="p-3 text-blue-600">${a.perm}</td><td class="p-3">${a.target}</td><td class="p-3">${a.details}</td></tr>
+        `).join('');
+        }
+
+        openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        saveStore() {
+            document.getElementById('store-label').innerText = document.getElementById('sel-store-node').value + " (Pickup)";
+            this.closeModal('modal-location');
+        }
+    }
+
+    const vm = new ValueMartEngine();
+    window.onload = () => vm.init();
+</script>
+</body>
+</html>
