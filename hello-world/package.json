@@ -1,0 +1,9 @@
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "A simple Hello World project",
+  "scripts": {
+    "test": "node --test hello.test.js",
+    "start": "node server.js"
+  }
+}

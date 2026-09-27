@@ -1,0 +1,8 @@
+- Use modern JavaScript syntax.
+- Use 2 spaces for indentation.
+- Keep the code simple.
+- Use semicolons.
+- Use descriptive test names.
+- Avoid unnecessary dependencies.
+- Use Node.js built-in modules instead of external packages when practical.
+- Keep browser-side JavaScript simple and readable.
