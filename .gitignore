@@ -1,0 +1,6 @@
+# Downloaded local Scala executable.
+/scala-cli
+# Generated Scala and sbt build artifacts.
+target/
+.scala-build/
+.bsp/
