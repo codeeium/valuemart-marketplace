@@ -21,11 +21,13 @@ object Server {
     s"""<!doctype html>
        |<html lang="en"><head><meta charset="utf-8">
        |<meta name="viewport" content="width=device-width, initial-scale=1">
-       |<title>Hello World Tests</title>
-       |<style>body {font: 18px system-ui; max-width: 760px; margin: 48px auto; padding: 24px; background: #f5f7fa; color: #182333} main {background: white; padding: 32px; border-radius: 12px} li {margin: 12px 0} .status {font-weight: bold}</style>
+       |<title>Hello World Checks</title>
+       |<style>body {font: 18px system-ui; max-width: 760px; margin: 48px auto; padding: 24px; background: #f5f7fa; color: #182333} main {background: white; padding: 32px; border-radius: 12px; overflow-wrap: anywhere} li {margin: 12px 0} .status {font-weight: bold} pre {white-space: pre-wrap; overflow-wrap: anywhere} @media (max-width: 480px) {body {margin: 0; padding: 12px} main {padding: 16px} ol {padding-left: 24px}}</style>
        |</head><body><main><h1>${Hello.helloWorld()}</h1>
        |<p class="status">$status</p>
-       |<p>${results.size} Tests</p><p>$passed Passed</p><p>$failed Failed</p>
+       |<p>${results.size} Checks</p><p>$passed Passed</p><p>$failed Failed</p>
+       |<p>These shared checks run once when the application starts. Restart the application to rerun them; refreshing this page shows the same results.</p>
+       |${if (results.isEmpty) "<p>No check results are available.</p>" else ""}
        |<ol>$rows</ol></main></body></html>""".stripMargin
   }
 

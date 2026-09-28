@@ -47,11 +47,11 @@ object HelloChecks {
     Check("Page displays the greeting", () => assert(Server.page(passing).contains("<h1>Hello World</h1>"))),
     Check("Passing results show accurate totals", () => {
       val html = Server.page(passing)
-      assert(Seq("PASSING", "1 Tests", "1 Passed", "0 Failed").forall(html.contains))
+      assert(Seq("PASSING", "1 Checks", "1 Passed", "0 Failed").forall(html.contains))
     }),
     Check("Failed results show failure and accurate totals", () => {
       val html = Server.page(passing :+ Result("Failed check", false))
-      assert(Seq("FAILING", "2 Tests", "1 Passed", "1 Failed").forall(html.contains))
+      assert(Seq("FAILING", "2 Checks", "1 Passed", "1 Failed").forall(html.contains))
       assert(!html.contains("PASSING"))
     }),
     Check("Page lists each individual test status", () => {
@@ -61,8 +61,9 @@ object HelloChecks {
     }),
     Check("Empty results do not report passing", () => {
       val html = Server.page(Seq.empty)
-      assert(Seq("FAILING", "0 Tests", "0 Passed", "0 Failed").forall(html.contains))
+      assert(Seq("FAILING", "0 Checks", "0 Passed", "0 Failed").forall(html.contains))
       assert(!html.contains("PASSING"))
+      assert(html.contains("No check results are available."))
     }),
     Check("Test names are escaped as HTML text", () => {
       val html = Server.page(Seq(Result("<script>alert('test')</script> & café", true)))

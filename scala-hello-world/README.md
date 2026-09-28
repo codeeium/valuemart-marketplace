@@ -24,6 +24,10 @@ The JDK built-in HttpServer is the only HTTP implementation. ScalaTest 3.2.17
 is a test-only dependency. No additional application dependencies are used.
 Project and workflow instructions are saved in CLAUDE.md.
 
+The page labels its startup results as Checks, distinct from the full ScalaTest
+suite, and explains that refreshing the page does not rerun them. Empty results
+show an explicit message. Long names and failure diagnostics wrap within the page.
+
 The page displays an ordered list of PASS/FAIL results and total, passed, and
 failed counts. Overall status is PASSING only for nonempty, entirely passing
 results; otherwise it is FAILING. Failure diagnostics are retained and escaped
