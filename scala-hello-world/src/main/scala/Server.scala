@@ -6,13 +6,17 @@ import java.util.concurrent.CountDownLatch
 object Server {
   val port = 3001
 
+  private def escape(text: String): String =
+    text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
   def page(results: Seq[HelloChecks.Result]): String = {
     val passed = results.count(_.passed)
     val failed = results.size - passed
     val status = if (results.nonEmpty && failed == 0) "PASSING" else "FAILING"
     val rows = results.map { result =>
-      val name = result.name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-      s"<li>$name: <strong>${if (result.passed) "PASS" else "FAIL"}</strong></li>"
+      val name = escape(result.name)
+      val detail = result.diagnostic.map(text => s"<pre>${escape(text)}</pre>").getOrElse("")
+      s"<li>$name: <strong>${if (result.passed) "PASS" else "FAIL"}</strong>$detail</li>"
     }.mkString("\n")
     s"""<!doctype html>
        |<html lang="en"><head><meta charset="utf-8">

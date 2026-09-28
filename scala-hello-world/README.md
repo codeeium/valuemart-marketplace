@@ -23,3 +23,10 @@ HTTP checks use temporary ports and close their resources afterward.
 The JDK built-in HttpServer is the only HTTP implementation. ScalaTest 3.2.17
 is a test-only dependency. No additional application dependencies are used.
 Project and workflow instructions are saved in CLAUDE.md.
+
+The page displays an ordered list of PASS/FAIL results and total, passed, and
+failed counts. Overall status is PASSING only for nonempty, entirely passing
+results; otherwise it is FAILING. Failure diagnostics are retained and escaped
+as HTML alongside check names. Responses use UTF-8 and byte-based lengths.
+The complete suite includes the twelve shared checks and a regression test for
+retaining and safely displaying failure diagnostics.

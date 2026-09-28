@@ -102,7 +102,7 @@ use the same verification logic.
 Include:
 
 * A named check with executable verification logic.
-* A result containing the check name and pass/fail status.
+* A result containing the check name, pass/fail status, and useful failure diagnostics.
 * A collection of checks.
 * A method to execute all checks and return results.
 
@@ -388,3 +388,30 @@ Include only if useful work remains.
 * Keep changes focused on the requested Scala project.
 * Continue until the requested functionality works and is verified,
   or clearly report a concrete blocker.
+
+## Authorized End-to-End Workflow
+
+ACCEPT ALL → INSPECT ALL → IMPLEMENT ALL → BUILD ALL → RUN ALL → TEST ALL →
+FIX ALL → RETEST ALL → REVIEW ALL → VERIFY ALL → DOCUMENT ALL → GIT REVIEW →
+COMMIT → PUSH → VERIFY FINAL STATE → REPORT ACTUAL RESULTS.
+
+Normal development operations, task-only staging, committing, and pushing to
+an unambiguous configured destination are authorized without repeated permission.
+Run `sbt compile`, the complete `sbt test` suite, and `sbt run`. On errors,
+inspect the actual failure, fix its cause, rebuild, rerun affected tests and the
+full suite, and repeat runtime verification. Never disable or weaken tests.
+Twelve required shared checks are a minimum, not a limit on ScalaTest cases.
+
+Verify console output, localhost binding, root status/body, individual results,
+totals, overall status, UTF-8, byte content lengths, and 404/Not Found responses.
+Verify temporary server, stream, and connection cleanup and shutdown behavior.
+Escape diagnostics as well as names. Restart to rerun startup checks; do not
+rerun them for each request. Leave the application running after verification.
+
+Review staged changes and generated-file ignores; run `git diff --check` and
+`git diff --cached --check`. Preserve unrelated staged work. Never force-push.
+Record the actual commit hash, branch, remote, and push result. Investigate
+concrete environmental blockers and report unresolved requirements honestly.
+Do not declare completion before all required verification and the push succeed.
+The final report must include implementation, files, build, complete test count,
+running status and URL, HTTP results, Git results, and remaining issues.

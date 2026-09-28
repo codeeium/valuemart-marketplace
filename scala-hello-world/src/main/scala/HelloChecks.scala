@@ -4,8 +4,20 @@ import java.nio.charset.StandardCharsets.UTF_8
 import scala.util.control.NonFatal
 
 object HelloChecks {
-  case class Check(name: String, verify: () => Unit)
-  case class Result(name: String, passed: Boolean)
+  case class Check(name: String, verify: () => Unit) {
+    def run(): Result = {
+      try {
+        verify()
+        Result(name, true)
+      } catch {
+        case NonFatal(error) =>
+          val diagnostic = s"${error.getClass.getSimpleName}: ${Option(error.getMessage).getOrElse("No error message")}"
+          System.err.println(s"FAIL: $name: $diagnostic")
+          Result(name, false, Some(diagnostic))
+      }
+    }
+  }
+  case class Result(name: String, passed: Boolean, diagnostic: Option[String] = None)
   private val passing = Seq(Result("Example check — café", true))
 
   private def request(path: String)(verify: (HttpURLConnection, String) => Unit): Unit = {
@@ -71,14 +83,5 @@ object HelloChecks {
     })
   )
 
-  def runAll(): Seq[Result] = checks.map { check =>
-    try {
-      check.verify()
-      Result(check.name, true)
-    } catch {
-      case NonFatal(error) =>
-        System.err.println(s"FAIL: ${check.name}: ${error.getMessage}")
-        Result(check.name, false)
-    }
-  }
+  def runAll(): Seq[Result] = checks.map(_.run())
 }
