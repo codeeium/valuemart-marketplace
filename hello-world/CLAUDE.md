@@ -5,6 +5,6 @@
 - Run the application with: `node hello.js`
 - Run automated tests with: `npm test`
 - Start the localhost test page with: `npm start`
-- Open the test page at: http://localhost:3000
+- Open the test page at: http://localhost:3001
 - All 10 automated tests must pass before considering the task complete.
 - The localhost test page must display a passing Hello World result.

@@ -1,0 +1,2 @@
+# Local Scala CLI executable; do not commit downloaded binaries.
+/scala-cli

@@ -4,8 +4,8 @@
   "description": "ValueMart Omnichannel Marketplace demo frontend (static)",
   "main": "index.js",
   "scripts": {
-    "start": "npx http-server . -p 3000 -c-1",
-    "dev": "npx http-server . -p 3000 -c-1",
+    "start": "npx http-server . -p 3001 -c-1",
+    "dev": "npx http-server . -p 3001 -c-1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "private": true
